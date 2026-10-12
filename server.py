@@ -387,7 +387,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def static(self, path):
         app = (ROOT / 'app').resolve()
-        relative = {'/': 'index.html', '/admin': 'admin.html', '/admin/': 'admin.html'}.get(path, path.lstrip('/'))
+        relative = {'/': 'index.html', '/jobs': 'jobs.html', '/jobs/': 'jobs.html', '/admin': 'admin.html', '/admin/': 'admin.html'}.get(path, path.lstrip('/'))
         asset = (app / relative).resolve()
         if not asset.is_relative_to(app) or any(part.startswith('.') for part in Path(relative).parts) or asset.suffix.lower() not in ('.html', '.css', '.js', '.svg', '.png', '.jpg', '.jpeg', '.webp', '.woff', '.woff2', '.ico') or not asset.is_file():
             raise APIError(404, 'Page not found.')

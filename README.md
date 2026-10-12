@@ -12,6 +12,8 @@ python3 server.py
 
 Open <http://127.0.0.1:8000/> for the candidate experience and <http://127.0.0.1:8000/admin> for the CMS.
 
+The homepage introduces the builder culture and brings a short job preview near the top. **Show more listings** opens `/jobs`, the dedicated roles directory with search, geography filters, job details, and applications.
+
 On first startup, the server creates a local admin account and writes its generated credentials to `var/admin-access.txt`. This file, the database, and runtime data are ignored by Git and cannot be fetched through the application server. Sign in using those credentials.
 
 For a different port or database:
@@ -58,7 +60,7 @@ python3 tests/browser_check.py
 
 - `server.py`: HTTP API, validation, authentication, safe static serving, and SQLite persistence.
 - `demo_jobs.py`: versioned, deterministic regional demo catalogue.
-- `app/index.html`, `app/careers.js`, `app/public.css`: candidate journey, published jobs, and applications.
+- `app/index.html`, `app/jobs.html`, `app/careers.js`, `app/public.css`: candidate journey, roles directory, published jobs, and applications.
 - `app/admin.html`, `app/admin.js`, `app/admin.css`: job CMS and application review.
 - `app/tokens.css`, `app/base.css`: the shared visual and control system.
 - `app/fonts/`: self-hosted Geist and Space Grotesk fonts, with their Open Font Licenses.

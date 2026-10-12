@@ -12,3 +12,6 @@ html{scroll-behavior:smooth;scroll-padding-top:90px}body{margin:0;background:var
 /* Finished editorial story artwork, rather than portrait placeholders. */
 .portrait-mark{font-size:44px;line-height:1.05;letter-spacing:-.05em;text-align:center;width:210px;height:210px;border-width:3px}.portrait-lavender .portrait-mark{font-size:38px}.portrait-yellow .portrait-mark{font-size:44px}.portrait-caption,.draft-note,.draft-tag,.demo-banner{display:none}
 @media(max-width:760px){.portrait-mark{font-size:38px;width:175px;height:175px}.portrait-lavender .portrait-mark{font-size:32px}.portrait-yellow .portrait-mark{font-size:38px}}
+.all-jobs-main .jobs{padding-top:64px;min-height:calc(100vh - 210px)}.all-jobs-main #jobs-title{font-size:clamp(42px,4.7vw,66px);line-height:1.08;letter-spacing:-.045em;margin:0}.all-jobs-main .section-heading>p{max-width:28ch}
+@media(max-width:760px){.all-jobs-main .jobs{padding-top:44px}.all-jobs-main #jobs-title{font-size:clamp(36px,8vw,52px)}}
+.back-to-careers{font-size:13px;display:inline-flex;min-height:44px;align-items:center;text-decoration:none;margin-bottom:20px;color:var(--color-muted)}.back-to-careers:hover{text-decoration:underline;color:var(--color-ink)}

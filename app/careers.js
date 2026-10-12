@@ -13,7 +13,10 @@ let submitting = false;
 let populatedFilters = false;
 let allJobs = [];
 let matchingJobs = [];
-let visibleLimit = 12;
+const previewMode = document.body.dataset.jobsView === 'preview';
+const pageSize = previewMode ? 6 : 12;
+const initialFilters = new URLSearchParams(location.search);
+let visibleLimit = pageSize;
 let requestCounter = 0;
 async function api(url, options = {}) {
   const response = await fetch(url, options);
@@ -55,6 +58,12 @@ function populateFilters(jobs) {
   replaceOptions('#job-team', jobs.map(job => job.team), 'All teams');
   replaceOptions('#job-mode', jobs.map(job => job.work_mode), 'All models');
   updateFacets();
+  if(initialFilters.has('search'))$('#job-search').value=initialFilters.get('search');
+  ['team','work_mode','country','state','location'].forEach(key=>{
+    const select=filterForm.elements.namedItem(key), value=initialFilters.get(key);
+    if(value && [...select.options].some(option=>option.value===value))select.value=value;
+    if(['country','state','location'].includes(key))updateFacets();
+  });
 }
 function renderJobs(jobs) {
   jobList.replaceChildren();
@@ -70,22 +79,24 @@ function renderJobs(jobs) {
   });
   $('#job-empty').hidden = jobs.length !== 0;
   $('#job-status').textContent = Math.min(visibleLimit,jobs.length)+' of '+jobs.length+' matching '+(jobs.length===1?'role':'roles');
-  $('#load-more-wrap').hidden = visibleLimit >= jobs.length;
+  $('#load-more-wrap').hidden = previewMode ? false : visibleLimit >= jobs.length;
+  const allLink=$('#show-all-jobs');
+  if(allLink){const params=new URLSearchParams(new FormData(filterForm));for(const[key,value]of [...params])if(!value)params.delete(key);allLink.href='/jobs'+(params.size?'?'+params:'');}
 }
 async function loadJobs() {
   listRequest?.abort(); listRequest = new AbortController();
   const current = ++requestCounter;
   $('#job-error').hidden = true; $('#job-empty').hidden = true; $('#load-more-wrap').hidden = true;
-  visibleLimit = 12;
+  visibleLimit = pageSize;
   $('#job-status').textContent = 'Loading open roles…';
   jobList.setAttribute('aria-busy','true');
-  const params = new URLSearchParams(new FormData(filterForm));
+  let params = new URLSearchParams(new FormData(filterForm));
   try {
     let data = await api('/api/jobs?'+(populatedFilters ? params : ''),{signal:listRequest.signal});
     if (current !== requestCounter) return;
     if (!Array.isArray(data.jobs)) throw new Error('The roles response was incomplete. Please try again.');
     if (!populatedFilters) {
-      populateFilters(data.jobs);populatedFilters=true;
+      populateFilters(data.jobs);populatedFilters=true;params=new URLSearchParams(new FormData(filterForm));
       if([...params.values()].some(Boolean)){
         data=await api('/api/jobs?'+params,{signal:listRequest.signal});
         if(current!==requestCounter)return;
@@ -105,7 +116,7 @@ filterForm.querySelectorAll('select').forEach(select=>select.addEventListener('c
   if(select.id==='job-state')$('#job-location').value='';
   updateFacets();clearTimeout(filterTimer);loadJobs();
 }));
-$('#load-more-jobs').addEventListener('click',()=>{const firstNew=visibleLimit;visibleLimit+=12;renderJobs(matchingJobs);jobList.children[firstNew]?.focus();});
+$('#load-more-jobs')?.addEventListener('click',()=>{const firstNew=visibleLimit;visibleLimit+=12;renderJobs(matchingJobs);jobList.children[firstNew]?.focus();});
 $('#retry-jobs').addEventListener('click',loadJobs);
 $('#clear-filters').addEventListener('click',()=>{filterForm.reset();updateFacets();loadJobs();$('#job-search').focus();});
 function resetApplication() {
@@ -138,7 +149,12 @@ function closeDialog(){if(!submitting)dialog.close();}
 $('#close-dialog').addEventListener('click',closeDialog);
 $('#success-close').addEventListener('click',closeDialog);
 dialog.addEventListener('cancel',event=>{if(submitting)event.preventDefault();});
-dialog.addEventListener('close',()=>{detailRequest?.abort();dialogTrigger?.focus();selectedJob=null;});
+dialog.addEventListener('close',()=>{
+  detailRequest?.abort();
+  const currentTrigger = selectedJob ? [...jobList.querySelectorAll('.job-row')].find(row=>row.dataset.jobId===String(selectedJob.id)) : null;
+  const restoreTarget = dialogTrigger?.isConnected ? dialogTrigger : currentTrigger || $('#job-search');
+  restoreTarget?.focus();selectedJob=null;
+});
 dialog.addEventListener('click',event=>{if(event.target===dialog){const rect=dialog.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)closeDialog();}});
 applicationForm.addEventListener('submit',async event=>{
   event.preventDefault();if(submitting||!selectedJob||!applicationForm.reportValidity())return;
