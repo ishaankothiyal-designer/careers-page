@@ -2,6 +2,12 @@
 
 A locally runnable end-to-end careers prototype: an admin publishes jobs, candidates apply, and the admin reviews applications. Cars24 careers content follows the supplied *Building Builders* brief. The shared visual language draws from Dropbox's official brand guidance, with supporting content patterns from Tines, Apollo, Webflow, Squarespace, and TinyWins.
 
+## Hosted test link
+
+The deployed demo is available at <https://building-builders-careers.cars24.chatgpt.site>. Open `/jobs` for the directory and `/admin` for hiring. The Site is private to its owner for testing; sign in with the owner’s ChatGPT account. Hosted admin access uses that identity rather than the local generated password.
+
+The hosted Worker source is in `hosting/careers-studio/`. Cloudflare D1 stores jobs, applications, statuses, and reviewer notes; runtime secrets remain in Sites. Its eight SQLite-backed API integration checks cover the hiring lifecycle, persistence, geographic filtering, identity, CSRF, and validation. The platform confirmed deployment and the database schema. Direct live HTTP/browser verification from this workspace was blocked by its network proxy.
+
 ## Run
 
 Requires Python 3.10 or later. The application uses only Python's standard library; no npm install or build step is needed.

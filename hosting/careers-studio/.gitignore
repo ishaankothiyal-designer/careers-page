@@ -1,0 +1,5 @@
+dist/
+.sites-runtime/
+.wrangler/
+node_modules/
+.env
