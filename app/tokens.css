@@ -1,0 +1,67 @@
+/* Shared Dropbox-inspired system. Careers content belongs to Cars24.
+   Palette and easing: brand.dropbox.com/color and brand.dropbox.com/motion.
+   DB Sharp Grotesk is substituted with local Space Grotesk; this is not a pixel-faithful recreation. */
+@font-face {
+  font-family: Geist;
+  src: url('/fonts/geist-latin-400-normal.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: Geist;
+  src: url('/fonts/geist-latin-700-normal.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  src: url('/fonts/space-grotesk-latin-700-normal.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+:root {
+  color-scheme: light;
+  --color-ink: #1e1919;
+  --color-muted: #625c58;
+  --color-paper: #f7f5f2;
+  --color-surface: #eee9e2;
+  --color-blue: #0061fe;
+  --color-blue-hover: #004bc7;
+  --color-line: #d5d0c9;
+  --color-inverse: #fff;
+  --color-on-blue: #fff;
+  --color-soft-blue: #c4dcff;
+  --color-lilac: #c8aff0;
+  --color-peach: #ffafa5;
+  --color-yellow: #f9d779;
+  --color-success: #225f3f;
+  --color-success-surface: #e2eee5;
+  --color-error: #9c2424;
+  --color-error-surface: #f7e5df;
+  --color-disabled: #e0dcd5;
+  --color-backdrop: #1e1919b8;
+  --color-inverse-muted: #d4ceca;
+  --color-inverse-line: #6c6565;
+  --color-shadow: #0003;
+  --color-placeholder-note: #c8c1bb;
+  --font-body: Geist, Arial, Helvetica, sans-serif;
+  --font-display: 'Space Grotesk', Geist, Arial, sans-serif;
+  --radius-sm: 2px;
+  --radius-md: 6px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  --ease-out: cubic-bezier(.65, 0, .45, 1);
+  --duration-fast: 160ms;
+  --duration-reveal: 400ms;
+  --z-header: 10;
+}

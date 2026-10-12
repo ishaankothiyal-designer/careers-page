@@ -1,3 +1,70 @@
-# Careers page
+# Careers studio
 
-Sample careers page project. Demo implementation will be added through a pull request.
+A locally runnable end-to-end careers prototype: an admin publishes jobs, candidates apply, and the admin reviews applications. Cars24 careers content follows the supplied *Building Builders* brief. The shared visual language draws from Dropbox's official brand guidance, with supporting content patterns from Tines, Apollo, Webflow, Squarespace, and TinyWins.
+
+## Run
+
+Requires Python 3.10 or later. The application uses only Python's standard library; no npm install or build step is needed.
+
+```sh
+python3 server.py
+```
+
+Open <http://127.0.0.1:8000/> for the candidate experience and <http://127.0.0.1:8000/admin> for the CMS.
+
+On first startup, the server creates a local admin account and writes its generated credentials to `var/admin-access.txt`. This file, the database, and runtime data are ignored by Git and cannot be fetched through the application server. Sign in using those credentials.
+
+For a different port or database:
+
+```sh
+python3 server.py --port 8080 --db /absolute/path/careers.db
+```
+
+To start without sample jobs, use `--no-seed` with a new database. Seeding runs once per database. Three initial jobs are illustrative test vacancies.
+
+For a controlled admin account, set `CAREERS_ADMIN_EMAIL` and `CAREERS_ADMIN_PASSWORD` before starting the server. The password must contain at least 12 characters. Supplying a password resets the admin account at startup; keep credentials out of source files and version control.
+
+## Test both sides
+
+1. Sign in at `/admin`. Create a job with its problem, team, location, working model, job description, and first-90-day outcome. Save the draft.
+2. Publish the job. Open the public careers page in a separate browser or private window. Drafts and closed jobs are hidden.
+3. Find the published job, read its details, and apply with a name, email, a short account of something built, and an optional portfolio link.
+4. Keep the application reference shown on the confirmation screen. Submission saves the application; no email is sent.
+5. Return to the admin's applications view. Read the submission, add a note, and move it through review, interview, hired, or rejected.
+6. Close the job. It disappears from the public page and no longer accepts applications. Existing applications remain available to the admin.
+7. Restart the server. Jobs, applications, notes, and statuses persist in SQLite; admin sessions require signing in again.
+
+This is a local prototype. The page flags draft stories, missing real photographs, proposed hiring stages, and illustrative jobs. No live Darwinbox or Assembly connection is configured.
+
+## Verification
+
+Backend integration checks require no extra packages:
+
+```sh
+python3 -m unittest discover -s tests -p 'test_api.py' -v
+```
+
+Browser checks use Playwright and Chromium and run with an isolated database:
+
+```sh
+python3 -m pip install playwright
+python3 -m playwright install chromium
+python3 tests/browser_check.py
+```
+
+`CHROMIUM_EXECUTABLE_PATH` can select an existing Chromium installation. These packages are only for automated browser verification; application runtime still has no third-party dependencies.
+
+## Project map
+
+- `server.py`: HTTP API, validation, authentication, safe static serving, and SQLite persistence.
+- `app/index.html`, `app/careers.js`, `app/public.css`: candidate journey, published jobs, and applications.
+- `app/admin.html`, `app/admin.js`, `app/admin.css`: job CMS and application review.
+- `app/tokens.css`, `app/base.css`: the shared visual and control system.
+- `app/fonts/`: self-hosted Geist and Space Grotesk fonts, with their Open Font Licenses.
+- `tests/`: isolated integration and real-browser checks.
+
+## Design sources and limits
+
+Dropbox's [colour](https://brand.dropbox.com/color), [typography](https://brand.dropbox.com/typography), [motion](https://brand.dropbox.com/motion), and [imagery](https://brand.dropbox.com/imagery) guidance informed the system. Its [careers](https://www.dropbox.jobs/en/) and [Emerging Talent](https://www.dropbox.jobs/en/emerging-talent/) pages informed ownership and project storytelling. References checked 12 October 2026.
+
+DB Sharp Grotesk is not bundled; the prototype uses Space Grotesk for display type and Geist for body text. Exact live-site animation and geometry were not visually verified because reference-site browser access was blocked. This is a Dropbox-inspired interpretation with one consistent design system, rather than a pixel-matched clone.
