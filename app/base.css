@@ -21,7 +21,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-style: normal; line-heig
 .button:disabled { background: var(--color-disabled); border-color: var(--color-disabled); color: var(--color-muted); }
 .field { display: grid; gap: var(--space-2); }
 .field label { font-size: 14px; font-weight: 700; }
-input:not([type=checkbox]):not([type=radio]), select, textarea { width: 100%; min-width: 0; min-height: 48px; padding: var(--space-3); border: 1px solid var(--color-muted); border-radius: var(--radius-sm); background: var(--color-inverse); color: var(--color-ink); }
+input:not([type=checkbox]):not([type=radio]), select, textarea { width: 100%; min-width: 0; min-height: 48px; padding: var(--space-3); border: 1px solid var(--color-control-line); border-radius: var(--radius-md); background: var(--color-inverse); color: var(--color-ink); }
 textarea { min-height: 120px; resize: vertical; }
 input::placeholder, textarea::placeholder { color: var(--color-muted); }
 input:disabled, textarea:disabled, select:disabled { background: var(--color-disabled); }
@@ -38,3 +38,8 @@ body:has(dialog[open]) { overflow-y: hidden; }
 
 /* Main navigation links keep a generous touch target on both surfaces. */
 .wordmark, .admin-brand, .admin-header > a, .demo-banner a, .footer-inner > a { display: inline-flex; align-items: center; min-height: 44px; }
+
+/* A shared field treatment keeps the filter bar and CMS forms in sync. */
+.field label, label.field { line-height: 1.4; }
+input:not([type=checkbox]):not([type=radio]):hover, select:hover, textarea:hover { border-color: var(--color-ink); }
+input:focus-visible, select:focus-visible, textarea:focus-visible { border-color: var(--color-blue); outline-offset: 2px; }

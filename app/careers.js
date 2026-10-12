@@ -11,6 +11,9 @@ let detailRequest = null;
 let filterTimer;
 let submitting = false;
 let populatedFilters = false;
+let allJobs = [];
+let matchingJobs = [];
+let visibleLimit = 12;
 let requestCounter = 0;
 async function api(url, options = {}) {
   const response = await fetch(url, options);
@@ -25,47 +28,70 @@ function make(tag, className, text) {
   if (text !== undefined) node.textContent = text;
   return node;
 }
-function populateFilters(jobs) {
-  [['team','#job-team'],['location','#job-location'],['work_mode','#job-mode']].forEach(([key, selector]) => {
-    const select = $(selector);
-    const previous = select.value;
-    const values = [...new Set(jobs.map(job => job[key]).filter(Boolean))].sort();
-    values.forEach(value => {
-      if (![...select.options].some(option => option.value === value)) {
-        const option = make('option', '', value); option.value = value; select.append(option);
-      }
-    });
-    select.value = previous;
+function replaceOptions(selector, values, firstLabel) {
+  const select = $(selector), previous = select.value;
+  select.replaceChildren();
+  const first = make('option', '', firstLabel); first.value = ''; select.append(first);
+  [...new Set(values.filter(Boolean))].sort().forEach(value => {
+    const option = make('option', '', value); option.value = value; select.append(option);
   });
+  select.value = [...select.options].some(option => option.value === previous) ? previous : '';
+}
+function updateFacets() {
+  const country = $('#job-country').value;
+  const countryJobs = allJobs.filter(job => !country || job.country === country);
+  const label = country === 'India' ? 'State / union territory' : country === 'Australia' ? 'State / territory' : ['UAE','United Arab Emirates'].includes(country) ? 'Emirate' : 'State / region';
+  $('#job-state-label').textContent = label;
+  const allRegionLabel = country === 'India' ? 'All states / union territories' : country === 'Australia' ? 'All states / territories' : ['UAE','United Arab Emirates'].includes(country) ? 'All emirates' : 'All states / regions';
+  replaceOptions('#job-state', countryJobs.map(job => job.state), allRegionLabel);
+  const state = $('#job-state').value;
+  replaceOptions('#job-location', countryJobs.filter(job => !state || job.state === state).map(job => job.location), 'All cities / locations');
+  const context = [country,state,$('#job-location').value].filter(Boolean);
+  $('#filter-context').textContent = context.length ? 'Exploring '+context.join(' · ')+'.' : 'Explore all countries, regions, and locations.';
+}
+function populateFilters(jobs) {
+  allJobs = jobs;
+  replaceOptions('#job-country', jobs.map(job => job.country), 'All countries');
+  replaceOptions('#job-team', jobs.map(job => job.team), 'All teams');
+  replaceOptions('#job-mode', jobs.map(job => job.work_mode), 'All models');
+  updateFacets();
 }
 function renderJobs(jobs) {
   jobList.replaceChildren();
-  jobs.forEach(job => {
+  jobs.slice(0,visibleLimit).forEach(job => {
     const row = make('button','job-row'); row.type = 'button'; row.dataset.jobId = job.id;
     const titleColumn = make('span');
     titleColumn.append(make('strong','',job.title),make('span','job-team',job.team));
     if (job.first_90_days) titleColumn.append(make('span','job-outcome','First 90 days: '+job.first_90_days));
-    const meta = make('span','job-meta',[job.location,job.country,job.work_mode,job.employment_type].filter(Boolean).join(' · '));
+    const meta = make('span','job-meta',[job.location,job.state,job.country,job.work_mode,job.employment_type].filter(Boolean).join(' · '));
     row.append(titleColumn,meta,make('span','job-action','View role →'));
     row.addEventListener('click',() => openJob(job.id,row));
     jobList.append(row);
   });
   $('#job-empty').hidden = jobs.length !== 0;
-  $('#job-status').textContent = jobs.length + (jobs.length === 1 ? ' published demo role' : ' published demo roles');
+  $('#job-status').textContent = Math.min(visibleLimit,jobs.length)+' of '+jobs.length+' matching demo '+(jobs.length===1?'role':'roles');
+  $('#load-more-wrap').hidden = visibleLimit >= jobs.length;
 }
 async function loadJobs() {
   listRequest?.abort(); listRequest = new AbortController();
   const current = ++requestCounter;
-  $('#job-error').hidden = true; $('#job-empty').hidden = true;
+  $('#job-error').hidden = true; $('#job-empty').hidden = true; $('#load-more-wrap').hidden = true;
+  visibleLimit = 12;
   $('#job-status').textContent = 'Loading open roles…';
   jobList.setAttribute('aria-busy','true');
   const params = new URLSearchParams(new FormData(filterForm));
   try {
-    const data = await api('/api/jobs?'+params,{signal:listRequest.signal});
+    let data = await api('/api/jobs?'+(populatedFilters ? params : ''),{signal:listRequest.signal});
     if (current !== requestCounter) return;
     if (!Array.isArray(data.jobs)) throw new Error('The roles response was incomplete. Please try again.');
-    if (!populatedFilters) {populateFilters(data.jobs);populatedFilters=true;}
-    renderJobs(data.jobs);
+    if (!populatedFilters) {
+      populateFilters(data.jobs);populatedFilters=true;
+      if([...params.values()].some(Boolean)){
+        data=await api('/api/jobs?'+params,{signal:listRequest.signal});
+        if(current!==requestCounter)return;
+      }
+    }
+    matchingJobs = data.jobs; renderJobs(matchingJobs);
   } catch(error) {
     if(error.name==='AbortError'||current!==requestCounter)return;
     jobList.replaceChildren();$('#job-status').textContent='Roles unavailable';
@@ -74,9 +100,14 @@ async function loadJobs() {
 }
 filterForm.addEventListener('submit',event=>{event.preventDefault();clearTimeout(filterTimer);loadJobs();});
 $('#job-search').addEventListener('input',()=>{clearTimeout(filterTimer);filterTimer=setTimeout(loadJobs,220);});
-filterForm.querySelectorAll('select').forEach(select=>select.addEventListener('change',()=>{clearTimeout(filterTimer);loadJobs();}));
+filterForm.querySelectorAll('select').forEach(select=>select.addEventListener('change',()=>{
+  if(select.id==='job-country'){$('#job-state').value='';$('#job-location').value='';}
+  if(select.id==='job-state')$('#job-location').value='';
+  updateFacets();clearTimeout(filterTimer);loadJobs();
+}));
+$('#load-more-jobs').addEventListener('click',()=>{const firstNew=visibleLimit;visibleLimit+=12;renderJobs(matchingJobs);jobList.children[firstNew]?.focus();});
 $('#retry-jobs').addEventListener('click',loadJobs);
-$('#clear-filters').addEventListener('click',()=>{filterForm.reset();loadJobs();$('#job-search').focus();});
+$('#clear-filters').addEventListener('click',()=>{filterForm.reset();updateFacets();loadJobs();$('#job-search').focus();});
 function resetApplication() {
   applicationForm.reset();applicationForm.hidden=false;
   $('#application-success').hidden=true;$('#application-error').hidden=true;
@@ -97,7 +128,7 @@ async function openJob(id,trigger) {
     if(!job)throw new Error('This opportunity is not available.');
     selectedJob=job;
     $('#dialog-title').textContent=job.title;
-    $('#dialog-meta').textContent=[job.team,job.location,job.country,job.work_mode,job.employment_type].filter(Boolean).join(' · ');
+    $('#dialog-meta').textContent=[job.team,job.location,job.state,job.country,job.work_mode,job.employment_type].filter(Boolean).join(' · ');
     [['description','#role-description'],['responsibilities','#role-responsibilities'],['requirements','#role-requirements'],['first_90_days','#role-first-90']].forEach(([key,target])=>{$(target).textContent=job[key]||'Details to be supplied by the role owner.';});
     $('#role-content').hidden=false;
   }catch(error){if(error.name!=='AbortError'){$('#dialog-error').textContent=error.message;$('#dialog-error').hidden=false;}}

@@ -18,8 +18,10 @@ from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, unquote, urlsplit
 
+from demo_jobs import SEED_VERSION, demo_jobs
+
 ROOT = Path(__file__).resolve().parent
-JOB_FIELDS = ('title', 'team', 'location', 'country', 'work_mode', 'employment_type', 'description', 'responsibilities', 'requirements', 'first_90_days', 'status')
+JOB_FIELDS = ('title', 'team', 'location', 'country', 'state', 'work_mode', 'employment_type', 'description', 'responsibilities', 'requirements', 'first_90_days', 'status')
 JOB_STATUSES = ('draft', 'published', 'closed')
 APPLICATION_STATUSES = ('new', 'reviewing', 'interview', 'hired', 'rejected')
 WORK_MODES = ('On-site', 'Hybrid', 'Remote')
@@ -53,7 +55,7 @@ def string(data, key, max_length=200, required=True):
 
 
 def validate_job(data, default_status='draft'):
-    clean = {field: string(data, field, 12000 if field in ('description', 'responsibilities', 'requirements', 'first_90_days') else 200) for field in JOB_FIELDS if field != 'status'}
+    clean = {field: string(data, field, 12000 if field in ('description', 'responsibilities', 'requirements', 'first_90_days') else 200, required=field != 'state') for field in JOB_FIELDS if field != 'status'}
     clean['status'] = data.get('status', default_status)
     for field, choices in [('status', JOB_STATUSES), ('work_mode', WORK_MODES), ('employment_type', EMPLOYMENT_TYPES)]:
         if clean[field] not in choices:
@@ -87,7 +89,7 @@ class CareersServer(ThreadingHTTPServer):
                 CREATE TABLE IF NOT EXISTS admin (email TEXT PRIMARY KEY, salt TEXT NOT NULL, password_hash TEXT NOT NULL);
                 CREATE TABLE IF NOT EXISTS jobs (
                     id TEXT PRIMARY KEY, title TEXT NOT NULL, team TEXT NOT NULL, location TEXT NOT NULL,
-                    country TEXT NOT NULL, work_mode TEXT NOT NULL, employment_type TEXT NOT NULL,
+                    country TEXT NOT NULL, state TEXT NOT NULL DEFAULT '', work_mode TEXT NOT NULL, employment_type TEXT NOT NULL,
                     description TEXT NOT NULL, responsibilities TEXT NOT NULL, requirements TEXT NOT NULL,
                     first_90_days TEXT NOT NULL, status TEXT NOT NULL CHECK(status IN ('draft','published','closed')),
                     created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
@@ -98,6 +100,8 @@ class CareersServer(ThreadingHTTPServer):
                     note TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
                     UNIQUE(job_id,email));
             ''')
+            if 'state' not in {column['name'] for column in db.execute('PRAGMA table_info(jobs)')}:
+                db.execute("ALTER TABLE jobs ADD COLUMN state TEXT NOT NULL DEFAULT ''")
             existing = db.execute('SELECT email FROM admin LIMIT 1').fetchone()
             env_password = os.environ.get('CAREERS_ADMIN_PASSWORD')
             if not existing or env_password:
@@ -109,28 +113,23 @@ class CareersServer(ThreadingHTTPServer):
                     raise ValueError('CAREERS_ADMIN_PASSWORD must be at least 12 characters.')
                 salt = secrets.token_hex(16)
                 db.execute('DELETE FROM admin')
-                db.execute('INSERT INTO admin VALUES (?,?,?)', (email, salt, password_hash(password, salt)))
+                db.execute('INSERT INTO admin(email,salt,password_hash) VALUES (?,?,?)', (email, salt, password_hash(password, salt)))
                 if not env_password:
                     access = self.db_path.parent / 'admin-access.txt'
                     descriptor = os.open(access, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
                     os.fchmod(descriptor, 0o600)
                     with os.fdopen(descriptor, 'w') as output:
                         output.write(f'Local demo admin\nEmail: {email}\nPassword: {password}\n')
-            if not db.execute("SELECT 1 FROM metadata WHERE key='initialized'").fetchone():
-                if seed:
-                    stamp = now()
-                    for role, team, location, mode in [
-                        ('Builder – Design the customer journey', 'Design', 'Gurugram', 'Hybrid'),
-                        ('Builder – Improve digital experiences', 'Engineering', 'Bengaluru', 'Hybrid'),
-                        ('Builder – Simplify pilot workflows', 'Operations', 'Gurugram', 'On-site')]:
-                        values = (secrets.token_hex(12), role, team, location, 'India', mode, 'Full-time',
-                                  'Illustrative demo role. Help turn meaningful problems into useful experiences. This posting is for testing; it is not an active vacancy.',
-                                  'Own a focused customer problem.\nWork openly across teams.\nShare what you learn and improve the process.',
-                                  'Experience solving relevant problems.\nClear communication and thoughtful collaboration.\nCuriosity and a willingness to learn.',
-                                  'Understand the customer journey, identify one improvement, and ship a measurable first iteration.',
-                                  'published', stamp, stamp)
-                        db.execute('INSERT INTO jobs VALUES (' + ','.join('?' * len(values)) + ')', values)
-                db.execute("INSERT INTO metadata VALUES ('initialized','1')")
+            seeded = db.execute("SELECT value FROM metadata WHERE key='demo_seed_version'").fetchone()
+            if seed and (not seeded or seeded['value'] != SEED_VERSION):
+                stamp = now()
+                columns = ('id', *JOB_FIELDS, 'created_at', 'updated_at')
+                for job in demo_jobs():
+                    values = (job['id'], *(job[field] for field in JOB_FIELDS), stamp, stamp)
+                    # Stable IDs and DO NOTHING preserve edits, statuses, and existing applications.
+                    db.execute('INSERT INTO jobs (' + ','.join(columns) + ') VALUES (' + ','.join('?' * len(columns)) + ') ON CONFLICT(id) DO NOTHING', values)
+                db.execute("INSERT INTO metadata(key,value) VALUES ('demo_seed_version',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", (SEED_VERSION,))
+            db.execute("INSERT INTO metadata(key,value) VALUES ('initialized','1') ON CONFLICT(key) DO NOTHING")
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -266,13 +265,13 @@ class Handler(BaseHTTPRequestHandler):
             return self.admin_api(method, path, query)
         if path == '/api/jobs' and method == 'GET':
             sql, params = "SELECT * FROM jobs WHERE status='published'", []
-            for field in ('team', 'location', 'work_mode'):
+            for field in ('team', 'location', 'country', 'state', 'work_mode'):
                 if query.get(field, [''])[0]:
                     sql += f' AND {field}=?'
                     params.append(query[field][0])
             if query.get('search', [''])[0]:
-                sql += " AND (instr(lower(title),?)>0 OR instr(lower(team),?)>0 OR instr(lower(description),?)>0 OR instr(lower(location),?)>0 OR instr(lower(country),?)>0)"
-                params.extend([query['search'][0].lower()] * 5)
+                sql += " AND (instr(lower(title),?)>0 OR instr(lower(team),?)>0 OR instr(lower(description),?)>0 OR instr(lower(location),?)>0 OR instr(lower(country),?)>0 OR instr(lower(state),?)>0)"
+                params.extend([query['search'][0].lower()] * 6)
             with self.server.connect() as db:
                 jobs = [dict(row) for row in db.execute(sql + ' ORDER BY created_at DESC,id', params)]
             return {'jobs': jobs}, 200, None
@@ -304,7 +303,7 @@ class Handler(BaseHTTPRequestHandler):
                         raise APIError(404, 'This role is no longer available.')
                     if db.execute('SELECT 1 FROM applications WHERE job_id=? AND email=?', (job_id, email)).fetchone():
                         raise APIError(409, 'You have already applied for this role with this email address.')
-                    db.execute('INSERT INTO applications VALUES (?,?,?,?,?,?,?,?,?,?,?)', (identity, reference, job_id, name, email, portfolio, statement, 'new', '', stamp, stamp))
+                    db.execute('INSERT INTO applications(id,reference,job_id,name,email,portfolio_url,statement,status,note,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)', (identity, reference, job_id, name, email, portfolio, statement, 'new', '', stamp, stamp))
                     return {'id': identity, 'reference': reference, 'job_title': job['title'], 'created_at': stamp, 'message': 'Application received. Save your reference for your records.'}, 201, None
         raise APIError(404, 'Endpoint not found.')
 
@@ -318,7 +317,8 @@ class Handler(BaseHTTPRequestHandler):
                     clean = validate_job(self.body())
                     identity, stamp = secrets.token_hex(12), now()
                     values = (identity, *(clean[field] for field in JOB_FIELDS), stamp, stamp)
-                    db.execute('INSERT INTO jobs VALUES (' + ','.join('?' * len(values)) + ')', values)
+                    columns = ('id', *JOB_FIELDS, 'created_at', 'updated_at')
+                    db.execute('INSERT INTO jobs (' + ','.join(columns) + ') VALUES (' + ','.join('?' * len(columns)) + ')', values)
                     return {'job': dict(db.execute('SELECT * FROM jobs WHERE id=?', (identity,)).fetchone())}, 201, None
             match = re.fullmatch(r'/api/admin/jobs/([a-zA-Z0-9_-]+)', path)
             if match and method in ('PUT', 'PATCH'):

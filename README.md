@@ -20,7 +20,7 @@ For a different port or database:
 python3 server.py --port 8080 --db /absolute/path/careers.db
 ```
 
-To start without sample jobs, use `--no-seed` with a new database. Seeding runs once per database. Three initial jobs are illustrative test vacancies.
+To start without sample jobs, use `--no-seed` with a new database. Seeding runs once per database. Fresh databases contain 120 illustrative test vacancies: 72 across all 28 Indian states and 8 union territories, 24 across Australia’s six states and two territories, and 24 across the UAE’s seven emirates. Existing databases receive the regional catalogue once; existing postings and applications remain intact.
 
 For a controlled admin account, set `CAREERS_ADMIN_EMAIL` and `CAREERS_ADMIN_PASSWORD` before starting the server. The password must contain at least 12 characters. Supplying a password resets the admin account at startup; keep credentials out of source files and version control.
 
@@ -28,7 +28,7 @@ For a controlled admin account, set `CAREERS_ADMIN_EMAIL` and `CAREERS_ADMIN_PAS
 
 1. Sign in at `/admin`. Create a job with its problem, team, location, working model, job description, and first-90-day outcome. Save the draft.
 2. Publish the job. Open the public careers page in a separate browser or private window. Drafts and closed jobs are hidden.
-3. Find the published job, read its details, and apply with a name, email, a short account of something built, and an optional portfolio link.
+3. Use country, state/region, city, team, and working-model filters to find the published job, read its details, and apply with a name, email, a short account of something built, and an optional portfolio link.
 4. Keep the application reference shown on the confirmation screen. Submission saves the application; no email is sent.
 5. Return to the admin's applications view. Read the submission, add a note, and move it through review, interview, hired, or rejected.
 6. Close the job. It disappears from the public page and no longer accepts applications. Existing applications remain available to the admin.
@@ -57,6 +57,7 @@ python3 tests/browser_check.py
 ## Project map
 
 - `server.py`: HTTP API, validation, authentication, safe static serving, and SQLite persistence.
+- `demo_jobs.py`: versioned, deterministic regional demo catalogue.
 - `app/index.html`, `app/careers.js`, `app/public.css`: candidate journey, published jobs, and applications.
 - `app/admin.html`, `app/admin.js`, `app/admin.css`: job CMS and application review.
 - `app/tokens.css`, `app/base.css`: the shared visual and control system.
