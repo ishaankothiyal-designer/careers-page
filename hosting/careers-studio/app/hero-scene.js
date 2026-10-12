@@ -29,13 +29,19 @@
         scene.style.removeProperty('--hero-background-offset');
         scene.style.removeProperty('--hero-cloud-left');
         scene.style.removeProperty('--hero-cloud-right');
+        scene.style.removeProperty('--hero-foreground-offset');
+        scene.style.removeProperty('--hero-background-scale');
         continue;
       }
       if (top - scroll > viewport || top + height - scroll < 0) continue;
       const progress = Math.max(0, Math.min(1, (scroll - top) / Math.max(1, height * .8)));
       // Continuous ease at the start and end, with no time-based catch-up or snapping.
-      const travel = (1 - Math.cos(progress * Math.PI)) * .5 * distance;
+      const eased = (1 - Math.cos(progress * Math.PI)) * .5;
+      const travel = eased * distance;
+      const elapsed = Math.max(0, Math.min(height, scroll - top));
       scene.style.setProperty('--hero-background-offset', scroll + 'px');
+      scene.style.setProperty('--hero-foreground-offset', -elapsed * .15 + 'px');
+      scene.style.setProperty('--hero-background-scale', String(1 + eased * .06));
       scene.style.setProperty('--hero-cloud-left', -travel + 'px');
       scene.style.setProperty('--hero-cloud-right', travel + 'px');
     }

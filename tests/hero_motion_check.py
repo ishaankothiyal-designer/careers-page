@@ -30,12 +30,17 @@ def motion_check(page, width, screenshot_dir=None):
     page.set_viewport_size({'width':width,'height':1000})
     scroll(page,0)
     start=geometry(page)
+    background_image=page.locator('.hero-scene-mountains')
+    initial_zoom=background_image.evaluate('(el)=>el.getBoundingClientRect().width') if background_image.count() else None
     check(not page.evaluate('document.documentElement.scrollWidth > innerWidth + 1'),f'Hero overflows at {width}px')
     scroll(page,200)
     moved=geometry(page)
     check(abs(moved['background']['y']-start['background']['y'])<1,f'Background moves in viewport at {width}px')
-    for name in ('content','iceberg'):
-        check(abs((moved[name]['y']-start[name]['y'])+200)<1,f'{name} does not follow document scroll at {width}px')
+    check(abs((moved['content']['y']-start['content']['y'])+230)<1,f'Hero copy/button do not move slightly faster than document scroll at {width}px')
+    check(abs((moved['iceberg']['y']-start['iceberg']['y'])+200)<1,f'Iceberg does not follow normal document scroll at {width}px')
+    if initial_zoom:
+        zoomed_in=background_image.evaluate('(el)=>el.getBoundingClientRect().width')
+        check(zoomed_in>initial_zoom,f'Background does not gently zoom in at {width}px')
     check(moved['cloud-left']['x']<start['cloud-left']['x'],'Left cloud does not move outward')
     check(moved['cloud-right']['x']>start['cloud-right']['x'],'Right cloud does not move outward')
     scroll(page,201)
@@ -48,6 +53,8 @@ def motion_check(page, width, screenshot_dir=None):
     check(exited['cloud-right']['x']>=width-1,f'Right cloud remains inside viewport at 80% hero progress ({width}px)')
     scroll(page,0)
     returned=geometry(page)
+    if initial_zoom:
+        check(abs(background_image.evaluate('(el)=>el.getBoundingClientRect().width')-initial_zoom)<1,f'Reverse scroll does not restore background zoom at {width}px')
     for name in ('background','cloud-left','cloud-right','content','iceberg'):
         check(abs(returned[name]['x']-start[name]['x'])<1 and abs(returned[name]['y']-start[name]['y'])<1,f'Reverse scroll fails to restore {name} at {width}px')
     if screenshot_dir and width in (375,1728):
@@ -109,8 +116,9 @@ def main():
             page.emulate_media(reduced_motion='reduce')
             settle(page)
             scroll(page,200)
-            for name in ('background','cloud-left','cloud-right'):
+            for name in ('background','cloud-left','cloud-right','content','iceberg'):
                 check(page.locator('.hero-scene-'+name).evaluate('(el)=>getComputedStyle(el).transform')=='none',f'Reduced-motion transform active on {name}')
+            check(page.locator('.hero-scene-mountains').evaluate('(el)=>getComputedStyle(el).transform')=='none','Reduced-motion zoom active on background artwork')
             scroll(page,0)
             page.locator('.hero-scene-nav').get_by_role('link',name='Open roles').click()
             page.wait_for_url('**/jobs')
@@ -126,7 +134,7 @@ def main():
             check(not errors,'JavaScript errors: '+repr(errors))
             browser.close()
         print('PASS: staged controller and real-page original assets/source slots/aspect preservation.')
-        print('PASS: fixed background, document-flow text/iceberg, outward cloud exit at 80%, one-pixel continuity, reverse, seven widths, reduced motion, zero JavaScript errors.')
+        print('PASS: anchored background zoom-in, faster copy/button, normal iceberg scroll, outward cloud exit at 80%, one-pixel continuity, reverse, seven widths, reduced motion, zero JavaScript errors.')
         print('PASS: real header CTA → dedicated listings → role details → application receipt.')
         print('Screenshots: tests/artifacts/hero-{desktop,mobile}{,-scroll}.png')
     finally:server.close()

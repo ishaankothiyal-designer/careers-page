@@ -2,13 +2,16 @@
 @font-face{font-family:Geist;src:url('/fonts/geist-latin-600-normal.woff2') format('woff2');font-weight:600;font-style:normal;font-display:swap}
 /* Scoped Figma hero implementation using the four supplied original exports.
    Static slots: 1728×781 scene; 876×361 iceberg; 488×315 clouds.
-   Controller sets pixel-valued background and cloud offsets; typography/iceberg
-   remain in document flow. No generated or substitute artwork is used. */
+   Copy/button travel 15% faster; iceberg follows normal page scroll.
+   Anchored background gently scales 1 to 1.06.
+   No generated or substitute artwork is used. */
 .hero-scene{
   --color-ink:#000;
   --hero-background-offset:0px;
   --hero-cloud-left:0px;
   --hero-cloud-right:0px;
+  --hero-foreground-offset:0px;
+  --hero-background-scale:1;
   position:relative;
   isolation:isolate;
   overflow:hidden;
@@ -37,6 +40,9 @@
   display:block;
   object-fit:cover;
   object-position:center;
+  transform:scale(var(--hero-background-scale));
+  transform-origin:center;
+  will-change:transform;
 }
 .hero-scene-cloud{
   position:absolute;
@@ -108,6 +114,10 @@
   pointer-events:none;
 }
 .hero-scene-iceberg img{display:block;width:100%;height:auto;object-fit:contain;object-position:center bottom}
+.hero-scene-content{
+  transform:translate3d(0,var(--hero-foreground-offset),0);
+  will-change:transform;
+}
 .hero-scene-nav{
   --color-ink:#000;
   position:absolute;
@@ -147,5 +157,5 @@
   .hero-scene-iceberg{height:auto;margin-top:38px}
 }
 @media(prefers-reduced-motion:reduce){
-  .hero-scene-background,.hero-scene-cloud-left,.hero-scene-cloud-right{transform:none;will-change:auto}
+  .hero-scene-background,.hero-scene-mountains,.hero-scene-cloud-left,.hero-scene-cloud-right,.hero-scene-content,.hero-scene-iceberg{transform:none;will-change:auto}
 }

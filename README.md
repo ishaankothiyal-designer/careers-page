@@ -1,6 +1,6 @@
 # Careers studio
 
-A locally runnable end-to-end careers prototype: an admin publishes jobs, candidates apply, and the admin reviews applications. Cars24 careers content follows the supplied *Building Builders* brief. The homepage navigation and hero follow the supplied Figma design, with a fixed background and clouds that move outward on scroll. Following sections draw from Dropbox's official brand guidance, with supporting content patterns from Tines, Apollo, Webflow, Squarespace, and TinyWins.
+A locally runnable end-to-end careers prototype: an admin publishes jobs, candidates apply, and the admin reviews applications. Cars24 careers content follows the supplied *Building Builders* brief. The homepage navigation and hero follow the supplied Figma design, with an anchored background that gently zooms in, hero text/button moving 15% faster than the page, an iceberg following normal scroll, and clouds that move outward on scroll. Following sections draw from Dropbox's official brand guidance, with supporting content patterns from Tines, Apollo, Webflow, Squarespace, and TinyWins.
 
 ## Hosted test link
 
