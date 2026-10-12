@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import secrets
+import re
 import sqlite3
 import socket
 import subprocess
@@ -225,6 +226,38 @@ class APITests(unittest.TestCase):
         self.assertEqual(self.client.request('GET','/api/jobs?'+params)[1]['jobs'],[])
         search=self.client.request('GET','/api/jobs?'+urllib.parse.urlencode({'search':'Maharashtra'}))[1]['jobs']
         self.assertTrue(search); self.assertTrue(all(row['state']=='Maharashtra' for row in search))
+
+    def test_seeded_copy_migration_preserves_editor_changes_and_applications(self):
+        from demo_jobs import demo_jobs
+        self.server.stop(); self.server.start(seed=True); self.login()
+        before=self.client.request('GET','/api/admin/jobs')[1]['jobs']
+        ids={row['id'] for row in before}
+        historical=demo_jobs(legacy_copy=True)[:2]
+        edited_id=historical[0]['id']
+        code,receipt=self.client.request('POST',f'/api/jobs/{edited_id}/applications',{'name':'Migration Applicant','email':'migration@example.test','portfolio_url':'','statement':'Built something before the content changed.'})
+        self.assertEqual(code,201,receipt)
+        code,body=self.client.request('PATCH',f"/api/admin/applications/{receipt['id']}",{'status':'reviewing','note':'Preserve this private reviewer note.'})
+        self.assertEqual(code,200,body)
+        self.server.stop()
+        with sqlite3.connect(self.server.db) as connection:
+            for fixture in historical:
+                connection.execute('UPDATE jobs SET description=?,responsibilities=?,requirements=?,first_90_days=? WHERE id=?',(fixture['description'],fixture['responsibilities'],fixture['requirements'],fixture['first_90_days'],fixture['id']))
+            connection.execute('UPDATE jobs SET description=?,status=? WHERE id=?',('An editor has written a specific hiring opportunity.','closed',edited_id))
+            connection.execute("DELETE FROM metadata WHERE key='demo_copy_version'")
+        self.server.start(); self.client=Client(self.server); self.login()
+        after=self.client.request('GET','/api/admin/jobs')[1]['jobs']
+        self.assertEqual(len(after),120); self.assertEqual({row['id'] for row in after},ids)
+        edited=next(row for row in after if row['id']==edited_id)
+        self.assertEqual(edited['description'],'An editor has written a specific hiring opportunity.')
+        self.assertEqual(edited['status'],'closed')
+        for fixture in historical:
+            migrated=next(row for row in after if row['id']==fixture['id'])
+            for field in ('description','responsibilities','requirements','first_90_days'):
+                self.assertIsNone(re.search(r'\b(?:demo|sample|fictional|illustrative|simulated)\b',migrated[field],re.I),(field,migrated[field]))
+        applications=self.client.request('GET','/api/admin/applications')[1]['applications']
+        application=next(row for row in applications if row['id']==receipt['id'])
+        self.assertEqual(application['status'],'reviewing')
+        self.assertEqual(application['note'],'Preserve this private reviewer note.')
 
     def test_private_files_and_traversal_not_served(self):
         for path in ('/server.py','/var/test.sqlite3','/.git/config','/../server.py','/%2e%2e/server.py','/app/../../server.py','/tests/test_api.py'):

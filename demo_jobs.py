@@ -45,8 +45,8 @@ PROBLEMS = (
 )
 
 
-def demo_jobs():
-    """Return exactly 120 deterministic demo jobs across 51 regions."""
+def demo_jobs(legacy_copy=False):
+    """Return 120 deterministic demo jobs; legacy copy supports safe migration."""
     jobs = []
     for country, regions, per_region in (
         ('India', INDIA_REGIONS, 2), ('Australia', AUSTRALIA_REGIONS, 3), ('UAE', UAE_REGIONS, 3)
@@ -67,4 +67,25 @@ def demo_jobs():
                     'first_90_days': f'Sample plan for {city}: understand the problem and local context, choose a focused experiment with the team, then {deliverable[0].lower() + deliverable[1:]}',
                     'status': 'published',
                 })
+    if not legacy_copy:
+        for job in jobs:
+            job['description'] = (f"Help {job['title'].split(' – ', 1)[1].split(' · ', 1)[0].lower()} "
+                                  f"with the {job['team'].lower()} team in {job['location']}. "
+                                  "Take ownership of a focused problem, collaborate across teams, "
+                                  "and turn what you learn into a useful improvement.")
+            job['requirements'] = job['requirements'].split('\nAll requirements are illustrative', 1)[0]
+            job['first_90_days'] = job['first_90_days'].replace('Sample plan for ', 'Your first 90 days in ')
+            for field in ('responsibilities', 'requirements', 'first_90_days'):
+                for previous, replacement in (
+                    ('the sample ', 'the '), ('a simulated local handoff', 'a local handoff'),
+                    ('a simulated inspection', 'an inspection'),
+                    ('sample support cases', 'support cases'),
+                    ('synthetic customer dataset', 'customer dataset'),
+                    ('using synthetic data', 'using relevant data'),
+                    ('fictional customer stories', 'customer stories'),
+                    ('fictional research cases', 'research interviews'),
+                    ('a demo service', 'a service'), ('a sample ', 'a '),
+                    ('a resilient sample service', 'a resilient service'),
+                ):
+                    job[field] = job[field].replace(previous, replacement)
     return jobs

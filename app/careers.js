@@ -69,7 +69,7 @@ function renderJobs(jobs) {
     jobList.append(row);
   });
   $('#job-empty').hidden = jobs.length !== 0;
-  $('#job-status').textContent = Math.min(visibleLimit,jobs.length)+' of '+jobs.length+' matching demo '+(jobs.length===1?'role':'roles');
+  $('#job-status').textContent = Math.min(visibleLimit,jobs.length)+' of '+jobs.length+' matching '+(jobs.length===1?'role':'roles');
   $('#load-more-wrap').hidden = visibleLimit >= jobs.length;
 }
 async function loadJobs() {
@@ -111,7 +111,7 @@ $('#clear-filters').addEventListener('click',()=>{filterForm.reset();updateFacet
 function resetApplication() {
   applicationForm.reset();applicationForm.hidden=false;
   $('#application-success').hidden=true;$('#application-error').hidden=true;
-  $('#submit-application').disabled=false;$('#submit-application').textContent='Send demo application';
+  $('#submit-application').disabled=false;$('#submit-application').textContent='Send application';
   submitting=false;
 }
 async function openJob(id,trigger) {
@@ -150,10 +150,10 @@ applicationForm.addEventListener('submit',async event=>{
   try {
     const result=await api('/api/jobs/'+encodeURIComponent(selectedJob.id)+'/applications',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     applicationForm.hidden=true;$('#application-reference').textContent=result.reference||result.id;
-    $('#success-message').textContent='Your demo application for '+(result.job_title||selectedJob.title)+' has been received.';
+    $('#success-message').textContent='Your application for '+(result.job_title||selectedJob.title)+' has been received.';
     $('#application-success').hidden=false;$('#application-success').focus();
   }catch(error){$('#application-error').textContent=error.message;$('#application-error').hidden=false;}
-  finally{submitting=false;$('#submit-application').disabled=false;$('#submit-application').textContent='Send demo application';$('#close-dialog').disabled=false;}
+  finally{submitting=false;$('#submit-application').disabled=false;$('#submit-application').textContent='Send application';$('#close-dialog').disabled=false;}
 });
 document.querySelectorAll('[data-story-filter]').forEach(button=>button.addEventListener('click',()=>{
   const filter=button.dataset.storyFilter;let count=0;

@@ -34,7 +34,7 @@ For a controlled admin account, set `CAREERS_ADMIN_EMAIL` and `CAREERS_ADMIN_PAS
 6. Close the job. It disappears from the public page and no longer accepts applications. Existing applications remain available to the admin.
 7. Restart the server. Jobs, applications, notes, and statuses persist in SQLite; admin sessions require signing in again.
 
-This is a local prototype. The page flags draft stories, missing real photographs, proposed hiring stages, and illustrative jobs. No live Darwinbox or Assembly connection is configured.
+This is a local prototype with finished presentation copy. The 120 seeded vacancies and culture stories are demonstration content, not verified active openings or approved recruitment policy. Editorial annotations and reference labels are kept out of the website. No live Darwinbox or Assembly connection is configured.
 
 ## Verification
 

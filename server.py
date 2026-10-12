@@ -129,6 +129,21 @@ class CareersServer(ThreadingHTTPServer):
                     # Stable IDs and DO NOTHING preserve edits, statuses, and existing applications.
                     db.execute('INSERT INTO jobs (' + ','.join(columns) + ') VALUES (' + ','.join('?' * len(columns)) + ') ON CONFLICT(id) DO NOTHING', values)
                 db.execute("INSERT INTO metadata(key,value) VALUES ('demo_seed_version',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", (SEED_VERSION,))
+            if not db.execute("SELECT 1 FROM metadata WHERE key='demo_copy_version' AND value='natural-v2'").fetchone():
+                # Change only untouched generated copy; preserve edits, status, IDs, and applications.
+                for original, clean in zip(demo_jobs(legacy_copy=True), demo_jobs()):
+                    for field in ('description', 'responsibilities', 'requirements', 'first_90_days'):
+                        db.execute(f'UPDATE jobs SET {field}=? WHERE id=? AND {field}=?',
+                                   (clean[field], original['id'], original[field]))
+                # Original three-role starter set used random IDs; identify its exact known copy.
+                legacy_titles = ('Product Designer', 'Frontend Engineer', 'Operations Lead',
+                                 'Builder – Design the customer journey', 'Builder – Improve digital experiences',
+                                 'Builder – Simplify pilot workflows')
+                original_description = 'Illustrative demo role. Help turn meaningful problems into useful experiences. This posting is for testing; it is not an active vacancy.'
+                db.execute('UPDATE jobs SET description=? WHERE title IN (' + ','.join('?' * len(legacy_titles)) + ') AND description=?',
+                           ('Help turn meaningful problems into useful experiences. Own a focused customer problem, collaborate across teams, and share what you learn as you improve the journey.',
+                            *legacy_titles, original_description))
+                db.execute("INSERT INTO metadata(key,value) VALUES ('demo_copy_version','natural-v2') ON CONFLICT(key) DO UPDATE SET value=excluded.value")
             db.execute("INSERT INTO metadata(key,value) VALUES ('initialized','1') ON CONFLICT(key) DO NOTHING")
 
 
