@@ -2,7 +2,7 @@
 
 This checkout deploys the existing careers homepage, six-role preview, full `/jobs` directory, and `/admin` CMS on Sites as a Cloudflare Worker. The source Python app is maintained at https://github.com/ishaankothiyal-designer/careers-page (branch `feature/careers-cms`).
 
-The frontend keeps the shared Dropbox-inspired design system and all candidate interactions. The hosted API uses Cloudflare D1 for jobs, applications, review status, and internal notes. The 120 seeded roles are demonstration content: 72 in India, 24 in Australia, and 24 in the UAE. No email delivery or ATS integration is configured.
+The homepage navigation and hero follow the supplied Figma reference, using the four original PNG exports, a fixed background, document-flow text/button/iceberg, and clouds that move outward on scroll. The supplied PNGs are 1× exports and are preserved without resampling. Reduced-motion visitors receive a static scene. Following sections keep the shared Dropbox-inspired design system and all candidate interactions. The hosted API uses Cloudflare D1 for jobs, applications, review status, and internal notes. The 120 seeded roles are demonstration content: 72 in India, 24 in Australia, and 24 in the UAE. No email delivery or ATS integration is configured.
 
 The Site is owner-private for testing. ChatGPT sign-in establishes the visitor identity; only the configured owner may use the hiring CMS. Admin mutations also require a server-generated CSRF token and the matching request Origin. Passwords and the local Python database are not uploaded.
 

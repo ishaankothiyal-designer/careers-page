@@ -1,10 +1,10 @@
 # Careers studio
 
-A locally runnable end-to-end careers prototype: an admin publishes jobs, candidates apply, and the admin reviews applications. Cars24 careers content follows the supplied *Building Builders* brief. The shared visual language draws from Dropbox's official brand guidance, with supporting content patterns from Tines, Apollo, Webflow, Squarespace, and TinyWins.
+A locally runnable end-to-end careers prototype: an admin publishes jobs, candidates apply, and the admin reviews applications. Cars24 careers content follows the supplied *Building Builders* brief. The homepage navigation and hero follow the supplied Figma design, with a fixed background and clouds that move outward on scroll. Following sections draw from Dropbox's official brand guidance, with supporting content patterns from Tines, Apollo, Webflow, Squarespace, and TinyWins.
 
 ## Hosted test link
 
-The deployed demo is available at <https://building-builders-careers.cars24.chatgpt.site>. Open `/jobs` for the directory and `/admin` for hiring. The Site is private to its owner for testing; sign in with the owner’s ChatGPT account. Hosted admin access uses that identity rather than the local generated password.
+The deployed demo is available at <https://building-builders-careers.cars24.chatgpt.site>. Open `/jobs` for the directory and `/admin` for hiring. The Site follows its existing workspace sharing policy. Sign in with ChatGPT to view it; hosted admin access is restricted to the configured owner and uses that identity rather than the local generated password.
 
 The hosted Worker source is in `hosting/careers-studio/`. Cloudflare D1 stores jobs, applications, statuses, and reviewer notes; runtime secrets remain in Sites. Its eight SQLite-backed API integration checks cover the hiring lifecycle, persistence, geographic filtering, identity, CSRF, and validation. The platform confirmed deployment and the database schema. Direct live HTTP/browser verification from this workspace was blocked by its network proxy.
 
@@ -58,6 +58,7 @@ Browser checks use Playwright and Chromium and run with an isolated database:
 python3 -m pip install playwright
 python3 -m playwright install chromium
 python3 tests/browser_check.py
+python3 tests/hero_motion_check.py
 ```
 
 `CHROMIUM_EXECUTABLE_PATH` can select an existing Chromium installation. These packages are only for automated browser verification; application runtime still has no third-party dependencies.
@@ -73,6 +74,8 @@ python3 tests/browser_check.py
 - `tests/`: isolated integration and real-browser checks.
 
 ## Design sources and limits
+
+The hero uses the four original PNG files supplied in `hero-assets.zip`, without resampling. They are 1× exports: background 1728×781, iceberg 876×361, and clouds 488×315 each. Dedicated checks cover image loading and proportions, fixed-background geometry, cloud exit and reverse motion, reduced motion, seven viewport widths, and navigation through an application.
 
 Dropbox's [colour](https://brand.dropbox.com/color), [typography](https://brand.dropbox.com/typography), [motion](https://brand.dropbox.com/motion), and [imagery](https://brand.dropbox.com/imagery) guidance informed the system. Its [careers](https://www.dropbox.jobs/en/) and [Emerging Talent](https://www.dropbox.jobs/en/emerging-talent/) pages informed ownership and project storytelling. References checked 12 October 2026.
 

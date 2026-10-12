@@ -1,12 +1,4 @@
-<!-- Staged implementation only. Requires all four exact 3× Figma PNG exports locally.
-     Do not mount this fragment until image slots have been visually verified.
-     Load /hero-scene.css and root's /hero-scene.js alongside existing styles.
-     This replaces the existing header+hero, preserving all following sections. -->
-<section class="hero-scene" data-parallax-hero aria-labelledby="hero-title">
-  <div class="hero-scene-background" aria-hidden="true">
-    <img class="hero-scene-mountains" src="/images/hero/background-3x.png" alt="" width="5184" height="2343">
-  </div>
-  <header class="site-header hero-scene-nav">
+<header class="site-header hero-scene-nav">
     <div class="container header-inner">
       <a href="/" class="wordmark" aria-label="Cars24 careers home">Cars24<span> / careers</span></a>
       <nav aria-label="Main navigation">
@@ -18,12 +10,17 @@
     </div>
     <div class="reading-progress" aria-hidden="true"><span></span></div>
   </header>
-  <div class="hero-scene-cloud hero-scene-cloud-left" data-hero-cloud="left" aria-hidden="true"><img src="/images/hero/cloud-left-3x.png" alt="" width="1464" height="945"></div>
-  <div class="hero-scene-cloud hero-scene-cloud-right" data-hero-cloud="right" aria-hidden="true"><img src="/images/hero/cloud-right-3x.png" alt="" width="1464" height="945"></div>
+<section class="hero-scene" data-parallax-hero aria-labelledby="hero-title">
+  <div class="hero-scene-background" aria-hidden="true">
+    <img class="hero-scene-mountains" src="/images/hero/background.png" alt="" width="1728" height="781">
+  </div>
+
+  <div class="hero-scene-cloud hero-scene-cloud-left" data-hero-cloud="left" aria-hidden="true"><img src="/images/hero/cloud-left.png" alt="" width="488" height="315"></div>
+  <div class="hero-scene-cloud hero-scene-cloud-right" data-hero-cloud="right" aria-hidden="true"><img src="/images/hero/cloud-right.png" alt="" width="488" height="315"></div>
   <div class="hero-scene-content">
     <h1 id="hero-title"><span>We don’t just hire builders.</span><span>We make them.</span></h1>
     <p class="hero-scene-description">Real problems to own. Room to act. Support to grow into the work. Help build the next generation of Cars24—and the workforce around it.</p>
     <a class="hero-scene-action" href="/jobs">Find your role</a>
   </div>
-  <div class="hero-scene-iceberg" aria-hidden="true"><img src="/images/hero/iceberg-3x.png" alt="" width="2628" height="1083"></div>
+  <div class="hero-scene-iceberg" aria-hidden="true"><img src="/images/hero/iceberg.png" alt="" width="876" height="361"></div>
 </section>
