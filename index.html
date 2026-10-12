@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="An illustrative careers page demo with searchable sample roles.">
+  <title>Careers at Orbit — Demo</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header wrap">
+    <a class="brand" href="#" aria-label="Orbit careers home"><span class="brand-mark" aria-hidden="true">◎</span> orbit<span class="demo-tag">DEMO</span></a>
+    <nav aria-label="Main navigation"><a href="#life">Life at Orbit</a><a class="nav-cta" href="#roles">Open roles <span aria-hidden="true">→</span></a></nav>
+  </header>
+  <main id="main">
+    <section class="hero wrap" aria-labelledby="hero-title">
+      <div class="hero-copy"><p class="eyebrow"><span class="status-dot"></span> A little curiosity goes a long way</p>
+        <h1 id="hero-title">Great work.<br>Better <span class="heading-accent">together.</span></h1>
+        <p class="intro">Bring your ideas, your perspective, and your whole self. Let’s build something that makes everyday life a little better.</p>
+        <a class="button" href="#roles">Find your next chapter <span aria-hidden="true">→</span></a>
+        <p class="hero-note">A fictional team. Real possibilities for this demo.</p>
+      </div>
+      <div class="hero-art" aria-hidden="true"><div class="orbit-ring ring-one"></div><div class="orbit-ring ring-two"></div><div class="orbit-ring ring-three"></div><span class="art-star">✳</span><div class="art-label">Different minds.<br>Shared momentum.</div><span class="art-caption">MAKE ROOM FOR WHAT’S NEXT</span></div>
+    </section>
+    <section class="life wrap" id="life" aria-labelledby="life-title">
+      <div class="section-heading"><h2 id="life-title">Space to do your best work.</h2></div>
+      <div class="values"><article><span class="value-number">01 /</span><h3>Stay curious</h3><p>Ask the extra question. Explore a new direction. Good ideas can come from anyone.</p></article><article><span class="value-number">02 /</span><h3>Build with care</h3><p>Sweat the small things and keep people at the center of every decision.</p></article><article><span class="value-number">03 /</span><h3>Grow together</h3><p>Share what you learn, make room for feedback, and celebrate progress as a team.</p></article></div>
+    </section>
+    <section class="roles wrap" id="roles" aria-labelledby="roles-title">
+      <div class="roles-heading"><div><h2 id="roles-title">Find your place.</h2></div><p>Small team. Big ideas.<br>Explore our sample opportunities.</p></div>
+      <div class="filters"><div class="search-field"><label for="search">Search roles</label><input id="search" type="search" placeholder="Try “designer” or “remote”"></div><div class="team-field"><label for="team">Team</label><select id="team"><option value="all">All teams</option><option>Design</option><option>Engineering</option><option>Marketing</option></select></div></div>
+      <p class="result-count" id="result-count" role="status" aria-live="polite"></p>
+      <div id="job-list" class="job-list"></div>
+      <div id="empty-state" class="empty-state" hidden><h3>No matching roles</h3><p>Try another keyword or choose a different team.</p><button id="reset" class="text-button" type="button">Reset filters</button></div>
+      <p class="sample-notice">All roles and company information are illustrative. This demo does not collect or submit applications.</p>
+      <noscript><p>Enable JavaScript to explore the sample job listings and filters.</p></noscript>
+    </section>
+  </main>
+  <footer class="wrap"><span class="brand">◎ orbit</span><p>Good things happen when we build together.</p><a href="#">Back to top ↑</a></footer>
+  <dialog id="role-dialog" aria-labelledby="dialog-title"><div class="dialog-top"><span class="demo-tag">SAMPLE ROLE</span><button id="close-dialog" class="close-button" type="button" aria-label="Close role details">×</button></div><p id="dialog-team" class="eyebrow"></p><h2 id="dialog-title"></h2><p id="dialog-meta" class="role-meta"></p><p id="dialog-description"></p><h3>What you’ll bring</h3><ul><li>A thoughtful approach to solving problems.</li><li>Clear communication and a collaborative mindset.</li><li>Curiosity, initiative, and a willingness to learn.</li></ul><div class="dialog-notice">This is a demo listing. Applications are not being accepted.</div></dialog>
+</body>
+</html>
