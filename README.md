@@ -79,4 +79,13 @@ The hero uses the four original PNG files supplied in `hero-assets.zip`, without
 
 Dropbox's [colour](https://brand.dropbox.com/color), [typography](https://brand.dropbox.com/typography), [motion](https://brand.dropbox.com/motion), and [imagery](https://brand.dropbox.com/imagery) guidance informed the system. Its [careers](https://www.dropbox.jobs/en/) and [Emerging Talent](https://www.dropbox.jobs/en/emerging-talent/) pages informed ownership and project storytelling. References checked 12 October 2026.
 
-DB Sharp Grotesk is not bundled; the prototype uses Space Grotesk for display type and Geist for body text. Exact live-site animation and geometry were not visually verified because reference-site browser access was blocked. This is a Dropbox-inspired interpretation with one consistent design system, rather than a pixel-matched clone.
+DB Sharp Grotesk is not bundled; the current prototype uses Turbo Core’s Geist typography throughout. Exact live-site animation and geometry were not visually verified because reference-site browser access was blocked. This is a Dropbox-inspired interpretation with one consistent design system, rather than a pixel-matched clone.
+
+
+## Turbo UI – Core foundations and atoms
+
+The current foundation comes from [Turbo UI – Core](https://www.figma.com/design/skMLeeIF8mbzAT265CI8nP/Turbo-UI---Core?node-id=2256-89414), inspected 13 October 2026. `design/turbo-core.tokens.json` records 647 resolved variables from Theme, Typography, Primitive, Semantic, Utility, and Misc collections, plus inspected atom geometry. The library’s default Theme mode is named Cars24; its primary colour is cobalt #4736fe. This uses the requested Core library foundations while retaining the current section composition and supplied hero artwork.
+
+Run `python3 scripts/sync_turbo_tokens.py` to regenerate the 641 CSS properties in `app/turbo-tokens.css`; six boolean behaviour flags are retained only in the snapshot. `app/tokens.css` maps application aliases onto those properties. `app/atoms.css` adapts Core Large/XL buttons, Large inputs, dropdowns, textareas, Small Low badges, choice chips, and icon controls to native HTML, including interactive states. The mapped React/React Native canonical packages are absent from this dependency-free app, so these are native adapters rather than installed canonical components. Marketing display sizes and hero motion remain specific to the approved page design.
+
+The final browser checks cover the full job publishing/application/review journey, 35 responsive checks, visible keyboard focus, native validation, and single submission while saving. Hero checks cover seven widths, original assets, anchored background zoom, faster copy, normal iceberg scroll, reversible outward clouds, and reduced motion.

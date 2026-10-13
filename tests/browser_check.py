@@ -22,6 +22,16 @@ def no_horizontal_overflow(page, width, surface):
     overflow = page.evaluate('document.documentElement.scrollWidth > window.innerWidth + 1')
     check(not overflow, f'{surface} horizontal overflow at {width}px')
 
+def keyboard_focus_check(page):
+    visible = page.evaluate('''() => {
+        const active = document.activeElement;
+        if (active === document.body) return true;
+        const style = getComputedStyle(active);
+        return active.matches(':focus-visible') &&
+            ((style.outlineStyle !== 'none' && parseFloat(style.outlineWidth) > 0) || style.boxShadow !== 'none');
+    }''')
+    check(visible, 'Keyboard focus has no visible indicator')
+
 def product_copy_check(page, surface):
     annotations = page.locator('.demo-banner:visible, .draft-note:visible, .jobs-notice:visible, .access-help:visible')
     check(annotations.count()==0, f'{surface} exposes editorial annotations')
@@ -166,17 +176,34 @@ def main():
             for _ in range(15):
                 candidate.keyboard.press('Tab')
                 check(candidate.evaluate('document.activeElement === document.body || document.querySelector("dialog[open]").contains(document.activeElement)'), 'Modal keyboard focus escaped')
+                keyboard_focus_check(candidate)
             candidate.keyboard.press('Escape')
             dialog.wait_for(state='hidden')
             check(candidate.locator('.job-row').filter(has_text=title).evaluate('(el) => el === document.activeElement'), 'Dialog close did not restore trigger focus')
             candidate.locator('.job-row').filter(has_text=title).click()
-            candidate.locator('#applicant-name').focus()
+            candidate.locator('#role-content').wait_for(state='visible')
+            application_requests = []
+            candidate.on('request', lambda request: application_requests.append(request) if request.method == 'POST' and request.url.endswith('/applications') else None)
+            candidate.get_by_role('button',name='Send application').click()
+            check(candidate.locator('#applicant-name').evaluate('(el)=>el.validity.valueMissing && el === document.activeElement'),'Empty application does not identify and focus the required name field')
+            check(not application_requests,'Invalid form sent an application request')
             candidate.get_by_role('textbox',name='Name',exact=True).fill('Browser Applicant')
+            candidate.get_by_role('textbox',name='Email',exact=True).fill('invalid-email')
+            candidate.get_by_role('button',name='Send application').click()
+            check(candidate.locator('#applicant-email').evaluate('(el)=>el.validity.typeMismatch && el === document.activeElement'),'Invalid email does not identify and focus the email field')
+            check(not application_requests,'Invalid email sent an application request')
             candidate.get_by_role('textbox',name='Email',exact=True).fill('browser@example.test')
             candidate.get_by_label('Portfolio or work link (optional)',exact=True).fill('https://example.test/project')
             candidate.get_by_role('textbox',name='Tell us about something you built',exact=True).fill('A scheduling tool my team used every week.')
+            pending_submissions = []
+            candidate.route('**/api/jobs/*/applications',lambda route:pending_submissions.append(route))
             candidate.get_by_role('button',name='Send application').click()
+            candidate.wait_for_function('() => document.querySelector("#submit-application").disabled')
+            check(candidate.locator('#close-dialog').is_disabled(),'Role close remains enabled while the application is saving')
+            check(len(pending_submissions)==1,'Submitting should create exactly one pending application request')
+            pending_submissions[0].continue_()
             candidate.get_by_text('Something new starts here.',exact=True).wait_for()
+            candidate.unroute('**/api/jobs/*/applications')
             check(candidate.get_by_text('Something new starts here.',exact=True).is_visible(), 'Candidate did not receive a success receipt')
             product_copy_check(candidate, 'candidate submission receipt')
             admin.locator('#applications-tab').click()
@@ -219,7 +246,7 @@ def main():
             check(not errors,'JavaScript errors: '+json.dumps(errors))
             browser.close()
         print('PASS: admin draft → publish → candidate details → application receipt → admin review → closed role.')
-        print('PASS: separate sessions, keyboard focus trapping/Escape/restoration, persisted review, 35 responsive surface checks, reduced-motion flow, zero JavaScript errors.')
+        print('PASS: separate sessions, keyboard focus trapping/Escape/restoration, persisted review, 35 responsive surface checks, reduced-motion flow, visible keyboard focus, native form errors, pending-submit disabled controls, zero JavaScript errors.')
         print('PASS: 120 seeded roles, load-more pagination, country/state/city cascade across India/Australia/UAE, dependent selection reset, homepage six-role preview and filter-preserving listings navigation.')
         print('Screenshots: tests/artifacts/candidate-desktop.png, candidate-mobile.png, listings-desktop.png, listings-mobile.png, admin-desktop.png')
     finally: server.close()

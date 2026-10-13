@@ -1,6 +1,6 @@
-/* Shared Dropbox-inspired system. Careers content belongs to Cars24.
-   Palette and easing: brand.dropbox.com/color and brand.dropbox.com/motion.
-   DB Sharp Grotesk is substituted with local Space Grotesk; this is not a pixel-faithful recreation. */
+/* Turbo UI - Core foundations. Legacy names adapt existing surfaces to Core.
+   Marketing compositions and authored scroll timing remain page-specific. */
+@import url('/turbo-tokens.css');
 @font-face {
   font-family: Geist;
   src: url('/fonts/geist-latin-400-normal.woff2') format('woff2');
@@ -22,45 +22,47 @@
   font-weight: 700;
   font-display: swap;
 }
+@font-face { font-family: Geist; src: url('/fonts/geist-latin-500-normal.woff2') format('woff2'); font-style: normal; font-weight: 500; font-display: swap; }
+@font-face { font-family: Geist; src: url('/fonts/geist-latin-600-normal.woff2') format('woff2'); font-style: normal; font-weight: 600; font-display: swap; }
 :root {
   color-scheme: light;
-  --color-ink: #1e1919;
-  --color-muted: #625c58;
-  --color-paper: #f7f5f2;
-  --color-surface: #eee9e2;
-  --color-blue: #0061fe;
-  --color-blue-hover: #004bc7;
-  --color-line: #d5d0c9;
-  --color-control-line: #8a847e;
-  --color-inverse: #fff;
-  --color-on-blue: #fff;
-  --color-soft-blue: #c4dcff;
-  --color-lilac: #c8aff0;
-  --color-peach: #ffafa5;
-  --color-yellow: #f9d779;
-  --color-success: #225f3f;
-  --color-success-surface: #e2eee5;
-  --color-error: #9c2424;
-  --color-error-surface: #f7e5df;
-  --color-disabled: #e0dcd5;
-  --color-backdrop: #1e1919b8;
-  --color-inverse-muted: #d4ceca;
-  --color-inverse-line: #6c6565;
-  --color-shadow: #0003;
-  --color-placeholder-note: #c8c1bb;
-  --font-body: Geist, Arial, Helvetica, sans-serif;
-  --font-display: 'Space Grotesk', Geist, Arial, sans-serif;
-  --radius-sm: 2px;
-  --radius-md: 6px;
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 24px;
-  --space-6: 32px;
-  --space-7: 48px;
-  --space-8: 64px;
-  --space-9: 96px;
+  --color-ink: var(--turbo-semantic-text-primary);
+  --color-muted: var(--turbo-semantic-text-secondary);
+  --color-paper: var(--turbo-primitive-cream-beige-50);
+  --color-surface: var(--turbo-semantic-bg-secondary);
+  --color-blue: var(--turbo-semantic-bg-brand-base);
+  --color-blue-hover: var(--turbo-semantic-bg-brand-base-hover);
+  --color-line: var(--turbo-semantic-border-primary);
+  --color-control-line: var(--turbo-semantic-border-secondary);
+  --color-inverse: var(--turbo-semantic-bg-primary);
+  --color-on-blue: var(--turbo-semantic-text-primary-inverse);
+  --color-soft-blue: var(--turbo-primitive-bright-blue-200);
+  --color-lilac: var(--turbo-primitive-electric-violet-200);
+  --color-peach: var(--turbo-primitive-orange-100);
+  --color-yellow: var(--turbo-primitive-amber-200);
+  --color-success: var(--turbo-semantic-text-success-bold);
+  --color-success-surface: var(--turbo-semantic-bg-success-subtle);
+  --color-error: var(--turbo-semantic-text-danger-base);
+  --color-error-surface: var(--turbo-semantic-bg-danger-subtler);
+  --color-disabled: var(--turbo-semantic-bg-disabled);
+  --color-backdrop: var(--turbo-semantic-bg-overlay);
+  --color-inverse-muted: var(--turbo-semantic-text-secondary-inverse);
+  --color-inverse-line: var(--turbo-semantic-border-secondary-inverse);
+  --color-shadow: var(--turbo-utility-alpha-black-200);
+  --color-placeholder-note: var(--turbo-semantic-text-tertiary);
+  --font-body: var(--turbo-theme-font-family-primary), Arial, sans-serif;
+  --font-display: var(--turbo-theme-font-family-primary), Arial, sans-serif;
+  --radius-sm: var(--turbo-theme-radius-sm);
+  --radius-md: var(--turbo-theme-radius-md);
+  --space-1: var(--turbo-misc-gap-4);
+  --space-2: var(--turbo-misc-gap-8);
+  --space-3: var(--turbo-misc-gap-12);
+  --space-4: var(--turbo-misc-gap-16);
+  --space-5: var(--turbo-misc-gap-24);
+  --space-6: var(--turbo-misc-gap-32);
+  --space-7: var(--turbo-misc-gap-48);
+  --space-8: var(--turbo-misc-gap-64);
+  --space-9: var(--turbo-misc-gap-96);
   --ease-out: cubic-bezier(.65, 0, .45, 1);
   --duration-fast: 160ms;
   --duration-reveal: 400ms;
