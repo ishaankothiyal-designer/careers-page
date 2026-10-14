@@ -24,3 +24,8 @@
 .motion-enabled .underwater-copy-second{opacity:var(--underwater-second-opacity,0);transform:translate3d(0,var(--underwater-second-y,80px),0)}
 .motion-enabled .underwater-tint{opacity:var(--underwater-tint-opacity,1)}
 @media(prefers-reduced-motion:reduce){.underwater-copy{will-change:auto}}
+
+/* Only the supplied water layer ripples; copy and iceberg stay sharp. */
+.water-effect-filter{position:absolute;width:0;height:0;overflow:hidden;pointer-events:none}
+.underwater-water{left:-16px;width:calc(100% + 32px);filter:url(#water-distortion)}
+@media(prefers-reduced-motion:reduce){.underwater-water{filter:none}}
