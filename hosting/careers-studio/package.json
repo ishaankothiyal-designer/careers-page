@@ -1,0 +1,9 @@
+{
+  "name": "careers-studio-hosted",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "python3 scripts/build.py",
+    "test": "node tests/worker.test.mjs"
+  }
+}
